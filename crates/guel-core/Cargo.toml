@@ -1,0 +1,14 @@
+[package]
+name = "guel-core"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "구엘룰 엔진 코어: 그래프, 정적 오라클(Layer1), 정밀 종반 탐색(Layer2), 스왑"
+
+[lib]
+name = "guel_core"
+path = "src/lib.rs"
+
+[dependencies]
+guel-kor = { workspace = true }

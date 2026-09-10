@@ -1,0 +1,16 @@
+[package]
+name = "guel-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "구엘룰 CLI: 인터랙티브/배치 바이너리"
+
+[[bin]]
+name = "guel"
+path = "src/main.rs"
+
+[dependencies]
+guel-core = { workspace = true }
+guel-kor = { workspace = true }
+guel-dict = { workspace = true }

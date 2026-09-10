@@ -1,0 +1,14 @@
+[package]
+name = "guel-dict"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "사전 로더, 파서, 정규화, 직렬화"
+
+[lib]
+name = "guel_dict"
+path = "src/lib.rs"
+
+[dependencies]
+guel-kor = { workspace = true }

@@ -1,0 +1,24 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/guel-core",
+    "crates/guel-kor",
+    "crates/guel-dict",
+    "crates/guel-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.97"
+license = "MIT"
+
+[workspace.dependencies]
+guel-core = { path = "crates/guel-core" }
+guel-kor = { path = "crates/guel-kor" }
+guel-dict = { path = "crates/guel-dict" }
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"

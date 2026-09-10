@@ -1,0 +1,11 @@
+[package]
+name = "guel-kor"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "한글 자모 분해/결합, 대표음(겹받침), 두음법칙 규칙 코덱"
+
+[lib]
+name = "guel_kor"
+path = "src/lib.rs"
