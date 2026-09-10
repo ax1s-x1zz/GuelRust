@@ -1,0 +1,17 @@
+[package]
+name = "guel-wasm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "구엘룰 WASM 바인딩 — 브라우저에서 프리컴파일 인덱스 캐시 + Web Worker 연산"
+
+[lib]
+name = "guel_wasm"
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+guel-core = { workspace = true }
+guel-dict = { workspace = true }
+wasm-bindgen = "0.2.128"

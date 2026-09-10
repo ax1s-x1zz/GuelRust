@@ -5,6 +5,7 @@ members = [
     "crates/guel-kor",
     "crates/guel-dict",
     "crates/guel-cli",
+    "crates/guel-wasm",
 ]
 
 [workspace.package]
