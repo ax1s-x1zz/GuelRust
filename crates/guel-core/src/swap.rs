@@ -176,7 +176,7 @@ mod tests {
         }
     }
 
-    #[test]
+#[test]
     fn max_swaps_respected() {
         let g = graph_of(&["가구", "구름", "구슬"]);
         let o = retrograde(&g);
@@ -184,5 +184,58 @@ mod tests {
         let game = Game::new(&mut e, SwapRules { max_per_game: 0 });
         let levels = game.engine.residual_table();
         assert!(!game.can_swap(levels));
+    }
+
+    #[test]
+    fn swap_beneficial_on_win_node_is_false() {
+        // 상대가 '가구'를 둠 → 끝소리 '구'(W1): 우리가 '구'에서 두면 이김 → 스왑 불필요.
+        let g = graph_of(&["가구", "구름", "구슬", "바나나"]);
+        let o = retrograde(&g);
+        let mut e = Engine::new(g, o);
+        let mut game = Game::new(&mut e, SwapRules::standard());
+        game.on_their_move(0); // 가구
+        assert!(!game.swap_beneficial(game.engine.residual_table()));
+    }
+
+    #[test]
+    fn swap_property_holds_for_l_nodes() {
+        // 사전에서 'L(깊이>0) 노드로 끝나는 단어'를 찾아:
+        // - 스왑 금지 조건(L0)이 아니면 swap_beneficial == true
+        // - do_swap 성공 시 소유권이 우리로 이전
+        let g = graph_of(&["가구", "구름", "구슬", "바나나", "나무", "무지개", "개구리"]);
+        let o = retrograde(&g);
+
+        fn find_loss_word(g: &Graph, o: &LevelTable) -> Option<u32> {
+            for node in 0..crate::NODE_SPACE {
+                let lvl = o.get(node);
+                if is_loss(lvl) && lvl != 0 {
+                    for w in 0..g.word_count() {
+                        if g.key_out_of(w) == node as u16 {
+                            return Some(w);
+                        }
+                    }
+                }
+            }
+            None
+        }
+
+        let word = find_loss_word(&g, &o);
+        if word.is_none() {
+            return; // 이 사전에선 L(>0) 시나리오가 없으면 검증 생략
+        }
+        let mut e = Engine::new(g, o);
+        let mut game = Game::new(&mut e, SwapRules::standard());
+        game.on_their_move(word.unwrap());
+        let lvl = game.engine.residual_table().get(game.current_node());
+        if lvl == 0 {
+            // 한방(L0) → 스왑 금지
+            assert!(!game.can_swap(game.engine.residual_table()));
+        } else {
+            assert!(is_loss(lvl));
+            assert!(game.swap_beneficial(game.engine.residual_table()));
+            assert!(game.do_swap());
+            assert_eq!(game.swaps_left(), 0);
+            assert_eq!(game.last_owner, Some(Owner::Us));
+        }
     }
 }
