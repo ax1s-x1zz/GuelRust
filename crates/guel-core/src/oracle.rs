@@ -70,8 +70,29 @@ impl LevelTable {
     }
 }
 
+/// 역방향 전파 입력 — 노드별 서로 다른 이웃 수와 역방향 소스 목록.
+///
+/// 전체 그래프(`Graph`)와 잔여 그래프(플레이된 단어 제외)가 공통으로
+/// 구현하는 최소 인터페이스다.
+pub trait LevelQuery {
+    /// 노드의 서로 다른 이웃(플레이 가능한 타깃) 수.
+    fn out_deg(&self, node: u32) -> u32;
+    /// 노드로 도달하는 서로 다른 소스 노드 (정렬).
+    fn predecessors(&self, node: u32) -> &[u16];
+}
+
+impl LevelQuery for Graph {
+    fn out_deg(&self, node: u32) -> u32 {
+        self.out_deg(node)
+    }
+
+    fn predecessors(&self, node: u32) -> &[u16] {
+        self.predecessors(node)
+    }
+}
+
 /// 역방향 전파로 레벨 테이블을 산출한다.
-pub fn retrograde(graph: &Graph) -> LevelTable {
+pub fn retrograde<Q: LevelQuery>(query: &Q) -> LevelTable {
     let n = NODE_SPACE as usize;
     let mut levels = vec![UNKNOWN; n];
     let mut cnt_win: Vec<u32> = vec![0; n];
@@ -80,7 +101,7 @@ pub fn retrograde(graph: &Graph) -> LevelTable {
 
     // L0: 방어 단어 0개 노드
     for node in 0..NODE_SPACE {
-        if graph.out_deg(node) == 0 {
+        if query.out_deg(node) == 0 {
             levels[node as usize] = L0;
             queue.push_back((node, L0));
         }
@@ -89,11 +110,11 @@ pub fn retrograde(graph: &Graph) -> LevelTable {
     while let Some((v, lvl)) = queue.pop_front() {
         if is_win(lvl) {
             // v 가 W → v 로 도달하는 모든 소스 u 의 W-이웃 수 증가.
-            for u in graph.predecessors(v) {
+            for u in query.predecessors(v) {
                 let ui = *u as usize;
                 if levels[ui] == UNKNOWN {
                     cnt_win[ui] += 1;
-                    if cnt_win[ui] == graph.out_deg(*u as u32) {
+                    if cnt_win[ui] == query.out_deg(*u as u32) {
                         // 모든 이웃이 W → u 는 L(lvl+1)
                         levels[ui] = lvl + 1;
                         queue.push_back((*u as u32, lvl + 1));
@@ -102,7 +123,7 @@ pub fn retrograde(graph: &Graph) -> LevelTable {
             }
         } else {
             // v 가 L → v 로 도달하는 미분류 소스 u 는 즉시 W(lvl+1)
-            for u in graph.predecessors(v) {
+            for u in query.predecessors(v) {
                 let ui = *u as usize;
                 if levels[ui] == UNKNOWN {
                     levels[ui] = lvl + 1;

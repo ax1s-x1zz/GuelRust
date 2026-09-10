@@ -23,6 +23,10 @@ pub struct Graph {
     rev: Vec<Vec<u16>>,
     /// 노드 키 → 서로 다른 타깃 노드 수.
     out_deg: Vec<u16>,
+    /// 단어 ID → 해당 단어의 key_out 노드.
+    key_out_of: Vec<u16>,
+    /// 단어 ID → 해당 단어의 소스 노드 (중복 제거, 정렬).
+    word_sources: Vec<Vec<u16>>,
 }
 
 impl Graph {
@@ -32,9 +36,18 @@ impl Graph {
         let mut out_words: Vec<HashSet<u32>> = (0..n).map(|_| HashSet::new()).collect::<Vec<_>>();
         let mut targets: Vec<HashSet<u16>> = (0..n).map(|_| HashSet::new()).collect::<Vec<_>>();
         let mut rev: Vec<HashSet<u16>> = (0..n).map(|_| HashSet::new()).collect::<Vec<_>>();
+        let mut key_out_of: Vec<u16> = vec![0; dict.len()];
+        let mut word_sources: Vec<Vec<u16>> = vec![Vec::new(); dict.len()];
 
         for w in &dict.words {
-            for src in sources_of(&w.key) {
+            key_out_of[w.id as usize] = w.key.key_out as u16;
+            let srcs = sources_of(&w.key);
+            word_sources[w.id as usize] = srcs
+                .iter()
+                .copied()
+                .map(|s| s as u16)
+                .collect::<Vec<u16>>();
+            for src in srcs {
                 let si = src as usize;
                 out_words[si].insert(w.id);
                 targets[si].insert(w.key.key_out as u16);
@@ -76,12 +89,29 @@ impl Graph {
             out_neighbors: out_neighbors_f,
             rev: rev_f,
             out_deg,
+            key_out_of,
+            word_sources,
         }
+    }
+
+    /// 사전 단어 수.
+    pub fn word_count(&self) -> u32 {
+        self.word_sources.len() as u32
     }
 
     /// 노드에서 플레이 가능한 단어 ID.
     pub fn out_words(&self, node: u32) -> &[u32] {
         &self.out_words[node as usize]
+    }
+
+    /// 단어 ID → key_out 노드.
+    pub fn key_out_of(&self, word_id: u32) -> u16 {
+        self.key_out_of[word_id as usize]
+    }
+
+    /// 단어 ID → 소스 노드 (중복 제거, 정렬).
+    pub fn word_sources(&self, word_id: u32) -> &[u16] {
+        &self.word_sources[word_id as usize]
     }
 
     /// 노드의 서로 다른 타깃 노드 (정렬).
