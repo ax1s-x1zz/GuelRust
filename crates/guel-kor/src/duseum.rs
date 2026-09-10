@@ -66,6 +66,56 @@ pub fn allowed_inits(rep: u32) -> &'static [u32] {
     ALLOWED_INITS[rep as usize]
 }
 
+/// 역방향: 초성 `cho` 로 시작하는 단어를 플레이할 수 있는 끝 대표음 집합.
+///
+/// 즉 `{ c : cho ∈ ALLOWED_INITS[c] }`. 그래프 역방향 인덱스 구축에 사용한다.
+pub const INV_ALLOWED_INITS: [&[u32]; CHOSEONG_N as usize] = [
+    // ㄱ(0) ← ㄱ-끝
+    &[0],
+    // ㄲ(1)
+    &[1],
+    // ㄴ(2) ← ㄴ-끝, ㄹ-끝 (두음법칙: ㄹ로 끝나도 ㄴ 초성 허용)
+    &[2, 5],
+    // ㄷ(3)
+    &[3],
+    // ㄸ(4)
+    &[4],
+    // ㄹ(5)
+    &[5],
+    // ㅁ(6)
+    &[6],
+    // ㅂ(7)
+    &[7],
+    // ㅃ(8)
+    &[8],
+    // ㅅ(9)
+    &[9],
+    // ㅆ(10)
+    &[10],
+    // ㅇ(11) ← ㄴ-끝, ㄹ-끝, ㅇ-끝 (두음법칙: ㄹ/ㄴ로 끝나도 ㅇ 초성 허용)
+    &[2, 5, 11],
+    // ㅈ(12)
+    &[12],
+    // ㅉ(13)
+    &[13],
+    // ㅊ(14)
+    &[14],
+    // ㅋ(15)
+    &[15],
+    // ㅌ(16)
+    &[16],
+    // ㅍ(17)
+    &[17],
+    // ㅎ(18)
+    &[18],
+];
+
+/// 초성 `cho` 로 시작하는 단어가 플레이 가능한 끝 대표음 집합.
+pub fn inv_allowed_inits(cho: u32) -> &'static [u32] {
+    debug_assert!(cho < CHOSEONG_N);
+    INV_ALLOWED_INITS[cho as usize]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -94,8 +144,23 @@ mod tests {
     }
 
     #[test]
-    fn ieung_ends_accept_ieung() {
-        assert!(can_chain(11, 11));
-        assert!(!can_chain(11, 0));
+    fn inv_mapping_is_inverse() {
+        // ㄴ(2) 초성: ㄴ-끝과 ㄹ-끝에서 플레이 가능
+        let inv = inv_allowed_inits(2);
+        assert_eq!(inv, &[2, 5]);
+        // ㅇ(11) 초성: ㄴ/ㄹ/ㅇ 끝에서 플레이 가능
+        assert_eq!(inv_allowed_inits(11), &[2, 5, 11]);
+        // ㄱ(0) 초성: ㄱ-끝에서만
+        assert_eq!(inv_allowed_inits(0), &[0]);
+        // 정방향과 역방향 일관성
+        for rep in 0..CHOSEONG_N {
+            for cho in 0..CHOSEONG_N {
+                assert_eq!(
+                    can_chain(rep, cho),
+                    inv_allowed_inits(cho).contains(&rep),
+                    "can_chain({rep},{cho}) != INV[{cho}] ∋ {rep}",
+                );
+            }
+        }
     }
 }
