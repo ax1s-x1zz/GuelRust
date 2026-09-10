@@ -9,6 +9,7 @@ pub mod graph;
 pub mod node;
 pub mod oracle;
 pub mod solver;
+pub mod verify;
 
 pub use engine::{BUDGET, Engine, Move, Side};
 pub use game::{Played, ResidualStats};
@@ -16,3 +17,4 @@ pub use graph::Graph;
 pub use node::{NODE_SPACE, is_consonant, is_syllable};
 pub use oracle::{UNKNOWN, LevelQuery, LevelTable, is_loss, is_neutral, is_win, retrograde};
 pub use solver::{SplitMix64, Verdict};
+pub use verify::{Outcome, simulate_engine_vs_random};

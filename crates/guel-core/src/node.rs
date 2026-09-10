@@ -3,7 +3,7 @@
 use guel_kor::chain::{CHO_N, CONSONANT_BASE, SYLLABLE_BASE};
 
 /// 노드 공간 상한 (자음 19 + 음절 399).
-pub const NODE_SPACE: u32 = CHO_N + 399;
+pub const NODE_SPACE: u32 = SYLLABLE_BASE + 399;
 
 /// 노드 키가 자음(받침 이음) 노드인지.
 #[inline]
@@ -39,7 +39,7 @@ mod tests {
 
     #[test]
     fn node_space_bounds() {
-        assert_eq!(NODE_SPACE, 19 + 399);
+        assert_eq!(NODE_SPACE, SYLLABLE_BASE + 399);
         assert!(syllable_node(18, 20) < SYLLABLE_BASE + 399);
     }
 }
