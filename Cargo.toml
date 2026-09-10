@@ -19,6 +19,6 @@ guel-kor = { path = "crates/guel-kor" }
 guel-dict = { path = "crates/guel-dict" }
 
 [profile.release]
-lto = true
+lto = "fat"
 codegen-units = 1
 panic = "abort"
