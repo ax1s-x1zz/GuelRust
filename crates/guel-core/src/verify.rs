@@ -32,7 +32,7 @@ pub fn simulate_engine_vs_random(
         // W 포지션이 아니면 검증 대상이 아님.
         return Outcome::Draw;
     }
-    let mut engine = Engine::new(graph, &oracle);
+    let mut engine = Engine::new(graph.clone(), oracle);
     let mut rng = SplitMix64::from_seed(seed);
     let mut node = start_node;
     let mut engine_turn = true;

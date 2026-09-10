@@ -102,7 +102,7 @@ mod tests {
         let k = word_key("닭").unwrap();
         assert_eq!(k.key_in, CONSONANT_BASE + 3); // ㄷ
         assert_eq!(k.key_in_cho, 3);
-        assert_eq!(k.key_out, CONSONANT_BASE + 0); // ㄱ
+        assert_eq!(k.key_out, CONSONANT_BASE); // ㄱ
         assert!(!k.open_final);
     }
 

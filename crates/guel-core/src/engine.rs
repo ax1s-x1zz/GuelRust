@@ -33,23 +33,24 @@ pub struct Move {
     pub target_level: u8,
 }
 
-/// 구엘룰 엔진.
-pub struct Engine<'g> {
-    graph: &'g Graph,
-    oracle: &'g LevelTable,
+/// 구엘룰 엔진 (그래프·오라클을 소유 — 임베딩/WASM 친화).
+pub struct Engine {
+    graph: Graph,
+    oracle: LevelTable,
     played: Played,
     residual: LevelTable,
     unplayed_total: u32,
 }
 
-impl<'g> Engine<'g> {
-    pub fn new(graph: &'g Graph, oracle: &'g LevelTable) -> Engine<'g> {
+impl Engine {
+    pub fn new(graph: Graph, oracle: LevelTable) -> Engine {
         let n = graph.word_count();
+        let residual = retrograde(&graph);
         Self {
             graph,
             oracle,
             played: Played::new(n),
-            residual: retrograde(graph),
+            residual,
             unplayed_total: n,
         }
     }
@@ -80,7 +81,7 @@ impl<'g> Engine<'g> {
 
     /// 초기(미플레이) 오라클 레벨 테이블.
     pub fn full_oracle(&self) -> &LevelTable {
-        self.oracle
+        &self.oracle
     }
 
     /// 현재(잔여) 레벨 테이블.
@@ -125,7 +126,7 @@ impl<'g> Engine<'g> {
 
         // Layer2 정밀 확정: 잔여 단어 수가 예산 이내.
         if self.unplayed_total <= BUDGET {
-            let mut s = Solver::new(self.graph, &self.residual);
+            let mut s = Solver::new(&self.graph, &self.residual);
             if let Some(v) = s.solve(node) {
                 return self.pick_by_verdict(moves, v);
             }
@@ -135,7 +136,7 @@ impl<'g> Engine<'g> {
     }
 
     fn rebuild_residual(&mut self) {
-        let stats = ResidualStats::build(self.graph, &self.played);
+        let stats = ResidualStats::build(&self.graph, &self.played);
         self.residual = retrograde(&stats);
     }
 
@@ -274,7 +275,7 @@ mod tests {
     fn side_selection() {
         let g = graph_of(&["가구", "구름", "구슬"]);
         let o = retrograde(&g);
-        let e = Engine::new(&g, &o);
+        let e = Engine::new(g, o);
         let ga = syllable_node(0, 0); // '가' L2
         let gu = syllable_node(0, 13); // '구' W1
         assert_eq!(e.start_side(gu), Side::First);
@@ -285,7 +286,7 @@ mod tests {
     fn best_move_shortest_win() {
         let g = graph_of(&["가구", "구름", "구슬"]);
         let o = retrograde(&g);
-        let mut e = Engine::new(&g, &o);
+        let mut e = Engine::new(g, o);
         let gu = syllable_node(0, 13); // '구' W1
         let m = e.best_move(gu).unwrap();
         // '구'의 수는 ㅁ/ㄹ(L0)로 보내는 구름/구슬 → target L0
@@ -296,7 +297,7 @@ mod tests {
     fn play_consumes_word() {
         let g = graph_of(&["가구", "구름", "구슬"]);
         let o = retrograde(&g);
-        let mut e = Engine::new(&g, &o);
+        let mut e = Engine::new(g, o);
         let gu = syllable_node(0, 13);
         let m = e.best_move(gu).unwrap();
         e.play(m.word_id);
@@ -311,7 +312,7 @@ mod tests {
     fn no_move_returns_none() {
         let g = graph_of(&["바나나"]);
         let o = retrograde(&g);
-        let mut e = Engine::new(&g, &o);
+        let mut e = Engine::new(g, o);
         let na = syllable_node(2, 0);
         assert!(e.best_move(na).is_none());
     }

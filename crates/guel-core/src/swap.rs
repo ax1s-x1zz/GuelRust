@@ -30,16 +30,16 @@ pub enum Owner {
 }
 
 /// 스왑을 포함한 게임 상태 래퍼.
-pub struct Game<'g, 'e> {
-    engine: &'e mut Engine<'g>,
+pub struct Game<'e> {
+    engine: &'e mut Engine,
     rules: SwapRules,
     swaps_used: u8,
     last_word: Option<u32>,
     last_owner: Option<Owner>,
 }
 
-impl<'g, 'e> Game<'g, 'e> {
-    pub fn new(engine: &'e mut Engine<'g>, rules: SwapRules) -> Game<'g, 'e> {
+impl<'e> Game<'e> {
+    pub fn new(engine: &'e mut Engine, rules: SwapRules) -> Game<'e> {
         Self {
             engine,
             rules,
@@ -140,7 +140,7 @@ mod tests {
     fn swap_beneficial_on_loss_node() {
         let g = graph_of(&["바나나", "가구"]);
         let o = retrograde(&g);
-        let mut e = Engine::new(&g, &o);
+        let mut e = Engine::new(g, o);
         let mut game = Game::new(&mut e, SwapRules::standard());
         // '가구'(id 1) 플레이 → t='구' (W1): 우리가 두면 이김 → 스왑 불필요.
         game.on_their_move(1);
@@ -152,7 +152,7 @@ mod tests {
     fn swap_forbidden_on_l0() {
         let g = graph_of(&["바나나", "가구"]);
         let o = retrograde(&g);
-        let mut e = Engine::new(&g, &o);
+        let mut e = Engine::new(g, o);
         let mut game = Game::new(&mut e, SwapRules::standard());
         // '바나나'(id 0) 플레이 → t='나'(L0): 스왑 금지(한방 회피 불가).
         game.on_their_move(0);
@@ -163,7 +163,7 @@ mod tests {
     fn swap_consumes_token_and_owned_by_us() {
         let g = graph_of(&["가구", "구름", "구슬"]);
         let o = retrograde(&g);
-        let mut e = Engine::new(&g, &o);
+        let mut e = Engine::new(g, o);
         let mut game = Game::new(&mut e, SwapRules::standard());
         game.on_their_move(0); // 가구 → t='구'
         let levels = game.engine.residual_table();
@@ -180,7 +180,7 @@ mod tests {
     fn max_swaps_respected() {
         let g = graph_of(&["가구", "구름", "구슬"]);
         let o = retrograde(&g);
-        let mut e = Engine::new(&g, &o);
+        let mut e = Engine::new(g, o);
         let game = Game::new(&mut e, SwapRules { max_per_game: 0 });
         let levels = game.engine.residual_table();
         assert!(!game.can_swap(levels));

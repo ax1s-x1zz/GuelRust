@@ -14,6 +14,7 @@ use guel_kor::duseum::inv_allowed_inits;
 use std::collections::HashSet;
 
 /// 구축된 이음 그래프 (불변).
+#[derive(Clone)]
 pub struct Graph {
     /// 노드 키 → 해당 노드에서 플레이 가능한 단어 ID (중복 제거, 정렬).
     out_words: Vec<Vec<u32>>,

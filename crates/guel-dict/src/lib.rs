@@ -35,7 +35,7 @@ pub struct LineSource {
 }
 
 impl LineSource {
-    pub fn new(text: &str) -> Self {
+    pub fn new(text: String) -> Self {
         Self {
             lines: text.split_whitespace().map(|s| s.to_string()).collect(),
             idx: 0,
@@ -204,7 +204,7 @@ mod tests {
         assert!(d.word(0).key.open_final);
         // 바나나: 시작 ㅂ(7), 끝 '나' 개음절
         assert_eq!(d.word(1).key.key_in_cho, 7); // ㅂ
-        assert_eq!(d.word(1).key.open_final, true);
+        assert!(d.word(1).key.open_final);
     }
 
     #[test]
@@ -212,12 +212,12 @@ mod tests {
         let d = build(&["사람"]);
         // 사람: 끝 ㅁ -> 대표음 ㅁ(초성 6)
         assert_eq!(d.word(0).key.key_out, 6);
-        assert_eq!(d.word(0).key.open_final, false);
+        assert!(!d.word(0).key.open_final);
     }
 
     #[test]
     fn line_source_feeds() {
-        let mut src = LineSource::new("사과\n바나나\n\n포도\n");
+        let mut src = LineSource::new("사과\n바나나\n\n포도\n".to_string());
         let mut b = DictBuilder::new();
         assert_eq!(b.feed(&mut src), 3);
         assert_eq!(b.build().len(), 3);

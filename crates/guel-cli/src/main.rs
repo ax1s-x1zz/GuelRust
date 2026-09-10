@@ -1,6 +1,5 @@
 use guel_core::{Engine, Graph, Outcome, is_loss, is_win, retrograde, simulate_engine_vs_random, Side, NODE_SPACE};
 use guel_dict::{Dict, DictBuilder, LineSource};
-use guel_kor::chain::word_key;
 
 /// 임베디드 샘플 사전 (파일 없이 즉시 실행용).
 const SAMPLE_DICT: &str = "\
@@ -111,8 +110,6 @@ fn cmd_stats(d: &Dict, g: &Graph) {
 
 fn cmd_play(d: &Dict, g: &Graph, start_arg: Option<String>) {
     let t = retrograde(g);
-    let mut engine = Engine::new(g, &t);
-
     let start_node = start_arg.map_or_else(
         || {
             for node in 0..NODE_SPACE {
@@ -122,10 +119,21 @@ fn cmd_play(d: &Dict, g: &Graph, start_arg: Option<String>) {
             }
             0
         },
-        |s| word_key(s.as_str()).unwrap().key_in,
+        |s| {
+            // 첫 음절의 초성 인덱스
+            let mut cho = 0u32;
+            for c in s.chars() {
+                let d = guel_kor::jamo::decompose(c);
+                if let Some(j) = d {
+                    cho = j.cho;
+                    break;
+                }
+            }
+            cho
+        },
     );
-
     println!("시작 소리: {} ({})", node_name(start_node), t.classify(start_node));
+    let mut engine = Engine::new(g.clone(), t);
     let side = engine.start_side(start_node);
     println!(
         "필승 사이드: {}",
