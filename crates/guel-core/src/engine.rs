@@ -83,6 +83,16 @@ impl<'g> Engine<'g> {
         self.oracle
     }
 
+    /// 현재(잔여) 레벨 테이블.
+    pub fn residual_table(&self) -> &LevelTable {
+        &self.residual
+    }
+
+    /// 단어 ID → 끝소리 노드.
+    pub fn current_key_out(&self, word_id: u32) -> u32 {
+        self.graph.key_out_of(word_id) as u32
+    }
+
     /// 시작 노드의 필승 사이드 판정.
     pub fn start_side(&self, node: u32) -> Side {
         let lvl = self.residual.get(node);
