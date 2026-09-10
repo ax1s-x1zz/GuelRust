@@ -199,10 +199,20 @@ mod tests {
     #[test]
     fn keys_assigned() {
         let d = build(&["사과", "바나나"]);
-        assert_eq!(d.word(0).key.key_in, 9); // ㅅ
-        assert_eq!(d.word(0).key.key_out, 0); // ㄱ (개음절 과)
-        assert_eq!(d.word(1).key.key_in, 7); // ㅂ
-        assert_eq!(d.word(1).key.key_out, 2); // ㄴ (개음절 나)
+        // 사과: 시작 ㅅ(9) 받침없음 -> 음절 '사' 노드, 끝 '과' 개음절 -> 음절 노드
+        assert_eq!(d.word(0).key.key_in_cho, 9); // ㅅ
+        assert!(d.word(0).key.open_final);
+        // 바나나: 시작 ㅂ(7), 끝 '나' 개음절
+        assert_eq!(d.word(1).key.key_in_cho, 7); // ㅂ
+        assert_eq!(d.word(1).key.open_final, true);
+    }
+
+    #[test]
+    fn closed_final_key() {
+        let d = build(&["사람"]);
+        // 사람: 끝 ㅁ -> 대표음 ㅁ(초성 6)
+        assert_eq!(d.word(0).key.key_out, 6);
+        assert_eq!(d.word(0).key.open_final, false);
     }
 
     #[test]
